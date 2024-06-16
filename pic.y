@@ -15,13 +15,15 @@
     YAMLelement *element_ptr;
     YAMLsequence *sequence_ptr;
     YAMLmap *map_ptr;
+    pair<string*, YAMLelement*> *pair_ptr;
     string *str_ptr;
     int int_val;
     float flt_val;
 }
-%type <element_ptr> element
-%type <sequence_ptr> sequence
+%type <element_ptr> trivial_element
+%type <pair_ptr> pair
 %type <map_ptr> map
+%type <sequence_ptr> sequence
 %type <str_ptr> STR_EL
 %type <int_val> INT_EL
 %type <flt_val> FLT_EL
@@ -32,29 +34,35 @@
 /* GRAMMAR */
 
 program
-    : sequence                          { root_seq = $1; }
-    | map                               { root_map = $1; }
+    : sequence            { printf("1.1 "); root_seq = $1; }
+    | map                 { printf("1.2 "); root_map = $1; }
 ;
 
 sequence
-    : DASH element NEWLINE              { $$ = new YAMLsequence; $$->elements.push_back($2); }
-    | sequence DASH element NEWLINE     { $1->elements.push_back($3); $$ = $1; }
+    : DASH trivial_element NEWLINE              { printf("2.1 "); $$ = new YAMLsequence; $$->elements.push_back($2); }
+    | DASH map                                  { printf("2.2 "); $$ = new YAMLsequence; ; $$->elements.push_back(new YAMLelement($2)); }
+    | sequence DASH trivial_element NEWLINE     { printf("2.3 "); $1->elements.push_back($3); $$ = $1; }
+    | sequence DASH map                         { printf("2.4 ");  $1->elements.push_back(new YAMLelement($3)); $$ = $1;  }
 ;
 
 map
-    : STR_EL COLON element NEWLINE      { $$ = new YAMLmap; $$->elements.insert(make_pair($1, $3)); }
-    | map STR_EL COLON element NEWLINE  { $1->elements.insert(make_pair($2, $4)); $$ = $1; }
+    : pair                     { printf("3.1 "); $$ = new YAMLmap(*$1); delete $1; }
+    | map pair                 { printf("3.2 "); $1->elements.push_back(*$2); $$ = $1; delete $2; }
 ;
 
-element
-    : STR_EL                            { $$ = new YAMLelement; $$->element_type = YAML_STRING; $$->element_value = $1; }
-    | INT_EL                            { $$ = new YAMLelement; $$->element_type = YAML_INT; $$->element_value = new int($1); }
-    | FLT_EL                            { $$ = new YAMLelement; $$->element_type = YAML_FLOAT; $$->element_value = new float($1); }
-    | TRUE_EL                           { $$ = new YAMLelement; $$->element_type = YAML_TRUE; $$->element_value = NULL; }
-    | FALSE_EL                          { $$ = new YAMLelement; $$->element_type = YAML_FALSE; $$->element_value = NULL; }
-    | NULL_EL                           { $$ = new YAMLelement; $$->element_type = YAML_NULL; $$->element_value = NULL; }
-    | INDENT_START map INDENT_END       { $$ = new YAMLelement; $$->element_type = YAML_MAP; $$->element_value = $2; }
-    | INDENT_START sequence INDENT_END  { $$ = new YAMLelement; $$->element_type = YAML_SEQUENCE; $$->element_value = $2; }
+pair
+    : STR_EL COLON trivial_element NEWLINE                      { printf("4.1 "); cout<<"("<<*$1<<": )"; ; $$ = new pair<string*, YAMLelement*>($1, $3); }
+    | STR_EL COLON NEWLINE INDENT_START sequence                { printf("4.2 "); $$ = new pair<string*, YAMLelement*>($1, new YAMLelement($5)); }
+    | STR_EL COLON NEWLINE INDENT_START map                     { printf("4.3 "); $$ = new pair<string*, YAMLelement*>($1, new YAMLelement($5)); }
+;
+
+trivial_element
+    : STR_EL                            { printf("5.1 ");cout<<"("<<*$1<<") "; $$ = new YAMLelement; $$->element_type = YAML_STRING; $$->element_value = $1; }
+    | INT_EL                            { printf("5.2 ");cout<<"("<<$1<<") "; $$ = new YAMLelement; $$->element_type = YAML_INT; $$->element_value = new int($1); }
+    | FLT_EL                            { printf("5.3 ");cout<<"("<<$1<<") "; $$ = new YAMLelement; $$->element_type = YAML_FLOAT; $$->element_value = new float($1); }
+    | TRUE_EL                           { printf("5.4 "); $$ = new YAMLelement; $$->element_type = YAML_TRUE; $$->element_value = NULL; }
+    | FALSE_EL                          { printf("5.5 "); $$ = new YAMLelement; $$->element_type = YAML_FALSE; $$->element_value = NULL; }
+    | NULL_EL                           { printf("5.6 "); $$ = new YAMLelement; $$->element_type = YAML_NULL; $$->element_value = NULL; }
 ;
 
 %%
@@ -63,6 +71,7 @@ element
 
 int main() {
     yyparse();
+    cout<<endl;
     
     if (root_map) {
         root_map->print(cout);

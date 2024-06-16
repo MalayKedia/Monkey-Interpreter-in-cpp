@@ -21,6 +21,10 @@ struct YAMLelement {
     // 0: map, 1: sequence, 2: string, 3: int, 4: float, 5: true, 6: false, 7: null
     void *element_value;
 
+    YAMLelement();
+    YAMLelement(YAMLsequence*);
+    YAMLelement(YAMLmap*);
+
     void print(std::ostream &os) const;
 };
 
@@ -30,6 +34,10 @@ struct YAMLsequence {
 };
 
 struct YAMLmap {
-    map<string*, YAMLelement*> elements;
+    vector<pair<string*, YAMLelement*>> elements;
+
+    YAMLmap();
+    YAMLmap(pair<string*, YAMLelement*>);
+
     void print(std::ostream &os) const;
 };
