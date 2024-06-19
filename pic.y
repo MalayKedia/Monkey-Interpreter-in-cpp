@@ -87,5 +87,6 @@ num_expression
 
 int main() { 
   yyparse();
+  printProgram(program_statement_list);
   return 0;
 }
