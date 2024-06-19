@@ -45,8 +45,8 @@ else                         { return ELSE; }
 \*=                          { return MULT_ASSIGN; }
 \/=                          { return DIV_ASSIGN; }
 
-\<                           { return '<'; }
-\>                           { return '>'; }
+\<                           { return LT; }
+\>                           { return GT; }
 ==                           { return EQ; }
 \<=                          { return LTEQ; }
 \>=                          { return GTEQ; }

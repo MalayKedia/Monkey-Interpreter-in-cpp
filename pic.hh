@@ -10,7 +10,9 @@ enum Type {
     VARIABLE,
     INT,
     FLOAT,
+    BOOLEAN,
     ARITHMETIC_OPERATOR,
+    BOOLEAN_OPERATOR,
     ASSIGNMENT,
 };
 

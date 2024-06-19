@@ -13,15 +13,18 @@
     vector<Statement*>* stmtlistptr;
 }
 
-%token INT_VAL FLT_VAL LET STR_ID
-%token FUNC RETURN IF ELSE TRUE_VAL FALSE_VAL ADD_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN LTEQ GTEQ EQ NEQ AND OR NOT STR_VAL
+%token LET INT_VAL FLT_VAL TRUE_VAL FALSE_VAL STR_ID LT GT LTEQ GTEQ EQ NEQ AND OR NOT
+%token FUNC RETURN IF ELSE STR_VAL ADD_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
 
+%left OR
+%left AND
+%right NOT
 %left '+' '-' 														// Left associative operators '+' and '-'
-%left '*' '/' 														// Left associative operators '*' and '/'
+%left '*' '/' '^'														// Left associative operators '*' and '/'
 %right Uminus 														// Right associative unary minus operator
 
 %type <strptr> INT_VAL FLT_VAL STR_ID
-%type <nodeptr> num_expression
+%type <nodeptr> num_expression bool_expression
 %type <statementptr> stmt
 %type <stmtlistptr> stmt_list
 
@@ -40,8 +43,26 @@ stmt_list
 ;
 
 stmt
-	: LET STR_ID '=' num_expression ';'                     { ASTNode* node = new ASTNode(ASSIGNMENT, $2, NULL, $4); $$ = new Statement(DECLARATION, node); }       
+	: LET STR_ID '=' num_expression ';'                     { ASTNode* node = new ASTNode(ASSIGNMENT, $2, NULL, $4); $$ = new Statement(DECLARATION, node); }  
+    | LET STR_ID '=' bool_expression ';'                    { ASTNode* node = new ASTNode(ASSIGNMENT, $2, NULL, $4); $$ = new Statement(DECLARATION, node); }
+     
     | STR_ID '=' num_expression	';'						    { ASTNode* node = new ASTNode(ASSIGNMENT, $1, NULL, $3); $$ = new Statement(REDEFINITION, node); }
+    | STR_ID '=' bool_expression ';'						{ ASTNode* node = new ASTNode(ASSIGNMENT, $1, NULL, $3); $$ = new Statement(REDEFINITION, node); }
+;
+
+bool_expression
+    : bool_expression AND bool_expression		            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("AND"), $1, $3); }
+    | bool_expression OR bool_expression		            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("OR"), $1, $3); }
+    | NOT bool_expression					                { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("NOT"), NULL, $2); }
+    | num_expression LT num_expression			            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("LT"), $1, $3); }
+    | num_expression GT num_expression			            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("GT"), $1, $3); }
+    | num_expression EQ num_expression			            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("EQ"), $1, $3); }
+    | num_expression NEQ num_expression			            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("NEQ"), $1, $3); }
+    | num_expression LTEQ num_expression		            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("LTEQ"), $1, $3); }
+    | num_expression GTEQ num_expression		            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("GTEQ"), $1, $3); }
+    | TRUE_VAL									            { $$ = new ASTNode(BOOLEAN, new string("true")); }
+    | FALSE_VAL									            { $$ = new ASTNode(BOOLEAN, new string("false")); }
+    | STR_ID                                                { $$ = new ASTNode(VARIABLE, $1); }
 ;
 
 num_expression
