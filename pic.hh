@@ -2,26 +2,33 @@
 using namespace std;
 
 enum StatementType{
-    LET,
-
+    DECLARATION,
+    REDEFINITION,
 };
 
 enum Type {
+    VARIABLE,
     INT,
     FLOAT,
-    UMINUS,
-    ARITHMETIC_OPERATOR
-    
+    ARITHMETIC_OPERATOR,
+    ASSIGNMENT,
 };
+
+struct ASTNode;
+struct Statement;
 
 struct Statement {
     StatementType stype;
     ASTNode* node;
+
+    Statement(StatementType stype, ASTNode* node)
+        : stype(stype), node(node) {
+        }
 };
 
 struct ASTNode {
     Type type;
-    string value;
+    string* value;
     
     ASTNode* leftChild;
     ASTNode* rightChild;
@@ -32,13 +39,13 @@ struct ASTNode {
     
     }
 
-    ASTNode(const Type& type, const string& value)
+    ASTNode(const Type& type, string* value)
         : type(type), value(value) {
             leftChild=NULL;
             rightChild=NULL;
         }
 
-    ASTNode(const Type& type, const string& value, ASTNode* leftChild, ASTNode* rightChild)
+    ASTNode(const Type& type, string* value, ASTNode* leftChild, ASTNode* rightChild)
         : type(type), value(value), leftChild(leftChild) , rightChild(rightChild){
         }
 

@@ -3,26 +3,27 @@
     extern "C" void yyerror(const char *s);
     extern int yylex(void);
 	
-    vector<Statement> stmt_list; // List of all statements in the program
+    vector<Statement*>* program_statement_list; // List of all statements in the program
 %}
 
 %union{
-    string operator;
-    ASTnode* node;
-    int ival;
-    double fval;
+    ASTNode* nodeptr;
+    string* strptr;
+    Statement* statementptr;
+    vector<Statement*>* stmtlistptr;
 }
 
 %token INT_VAL FLT_VAL LET STR_ID
+%token FUNC RETURN IF ELSE TRUE_VAL FALSE_VAL ADD_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN LTEQ GTEQ EQ NEQ AND OR NOT STR_VAL
 
 %left '+' '-' 														// Left associative operators '+' and '-'
 %left '*' '/' 														// Left associative operators '*' and '/'
 %right Uminus 														// Right associative unary minus operator
 
-%type <ival> INT_VAL
-%type <fval> FLT_VAL
-%type <operator> arithmetic_operator
-%type <node> num_expression
+%type <strptr> INT_VAL FLT_VAL STR_ID
+%type <nodeptr> num_expression
+%type <statementptr> stmt
+%type <stmtlistptr> stmt_list
 
 %start program 														// Starting rule for the grammar
 %%
@@ -30,33 +31,29 @@
 /* GRAMMAR */
 
 program
-	:	stmt_list															// A program consists of a list of statements
+	:	stmt_list			                            { program_statement_list = $1; }												// A program consists of a list of statements
 ;
 
 stmt_list
-	:	stmt_list stmt												// A statement list can be another statement list followed by a statement
-	|	stmt																	// Or just a single statement
+	:	stmt_list stmt									{ $1->push_back($2); $$ = $1; }
+	|	stmt											{ $$ = new vector<Statement*>; $$->push_back($1); }
 ;
 
 stmt
-	: LET STR_ID '=' num_expression										// Assignment statement
-	/* | expression ';'													// Expression statement: just evaluate the expression and print its value */
+	: LET STR_ID '=' num_expression ';'                     { ASTNode* node = new ASTNode(ASSIGNMENT, $2, NULL, $4); $$ = new Statement(DECLARATION, node); }       
+    | STR_ID '=' num_expression	';'						    { ASTNode* node = new ASTNode(ASSIGNMENT, $1, NULL, $3); $$ = new Statement(REDEFINITION, node); }
 ;
-
-
 
 num_expression
-	: num_expression arithmetic_operator num_expression		{ $$ = new ASTnode(ARITHMETIC_OPERATOR, *$2, $1, $3); delete $2; }	
-	| '-' num_expression %prec Uminus		                { $$ = new ASTnode(UMINUS, $2); }
-	| INT_VAL									            { $$ = new ASTnode(INT, $1);}
-	| FLT_VAL									            { $$ = new ASTnode(FLOAT, $1); }
+	: num_expression '+' num_expression		                { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string("PLUS"), $1, $3); }	
+    | num_expression '-' num_expression		                { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string("MINUS"), $1, $3); }
+    | num_expression '*' num_expression		                { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string("MULTIPLY"), $1, $3); }
+    | num_expression '/' num_expression		                { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string("DIVIDE"), $1, $3); }
+	| '-' num_expression %prec Uminus		                { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string ("UMINUS") , NULL, $2 ); }
+	| INT_VAL									            { $$ = new ASTNode(INT, $1);}
+	| FLT_VAL									            { $$ = new ASTNode(FLOAT, $1); }
+    | STR_ID                                                { $$ = new ASTNode(VARIABLE, $1); }
 ;
-
-arithmetic_operator
-    : '+' { $$ = new string('+'); }
-    | '-' { $$ = new string('-'); }
-    | '*' { $$ = new string('*'); }
-    | '^' { $$ = new string('^'); }
 
 %%
 
