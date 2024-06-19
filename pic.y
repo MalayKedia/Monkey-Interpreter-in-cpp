@@ -13,8 +13,8 @@
     vector<Statement*>* stmtlistptr;
 }
 
-%token LET INT_VAL FLT_VAL TRUE_VAL FALSE_VAL STR_ID LT GT LTEQ GTEQ EQ NEQ AND OR NOT
-%token FUNC RETURN IF ELSE STR_VAL ADD_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
+%token LET INT_VAL FLT_VAL TRUE_VAL FALSE_VAL STR_ID LT GT LTEQ GTEQ EQ NEQ AND OR NOT ADD_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
+%token FUNC RETURN IF ELSE STR_VAL
 
 %left OR
 %left AND
@@ -48,6 +48,11 @@ stmt
      
     | STR_ID '=' num_expression	';'						    { ASTNode* node = new ASTNode(ASSIGNMENT, $1, NULL, $3); $$ = new Statement(REDEFINITION, node); }
     | STR_ID '=' bool_expression ';'						{ ASTNode* node = new ASTNode(ASSIGNMENT, $1, NULL, $3); $$ = new Statement(REDEFINITION, node); }
+
+    | STR_ID ADD_ASSIGN num_expression ';'				    { ASTNode* new_val = new ASTNode(ARITHMETIC_OPERATOR, new string("PLUS"), new ASTNode(VARIABLE, $1), $3); ASTNode* node = new ASTNode(ASSIGNMENT, $1, NULL, new_val); $$ = new Statement(REDEFINITION, node); }
+    | STR_ID MINUS_ASSIGN num_expression ';'				{ ASTNode* new_val = new ASTNode(ARITHMETIC_OPERATOR, new string("MINUS"), new ASTNode(VARIABLE, $1), $3); ASTNode* node = new ASTNode(ASSIGNMENT, $1, NULL, new_val); $$ = new Statement(REDEFINITION, node); }
+    | STR_ID MULT_ASSIGN num_expression ';'				    { ASTNode* new_val = new ASTNode(ARITHMETIC_OPERATOR, new string("MULTIPLY"), new ASTNode(VARIABLE, $1), $3); ASTNode* node = new ASTNode(ASSIGNMENT, $1, NULL, new_val); $$ = new Statement(REDEFINITION, node); }
+    | STR_ID DIV_ASSIGN num_expression ';'				    { ASTNode* new_val = new ASTNode(ARITHMETIC_OPERATOR, new string("DIVIDE"), new ASTNode(VARIABLE, $1), $3); ASTNode* node = new ASTNode(ASSIGNMENT, $1, NULL, new_val); $$ = new Statement(REDEFINITION, node); }
 ;
 
 bool_expression
