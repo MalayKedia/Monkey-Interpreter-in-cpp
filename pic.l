@@ -29,25 +29,24 @@ false                        { return FALSE_VAL; }
 if                           { return IF; }
 else                         { return ELSE; }
 
-;                            { return SEMICOLON; }
+;                            { return ';'; }
+,                            { return ','; }
+:                            { return ':'; }
 
-,                            { return COMMA; }
-:                            { return COLON; }
+\+                           { return '+'; }
+\-                           { return '-'; }
+\*                           { return '*'; }
+\/                           { return '/'; }
+\^                           { return '^'; }  /* I am using ^ for power, if it is inconsistent with your testcases, do tell */
 
-\+                           { return PLUS; }
-\-                           { return MINUS; }
-\*                           { return MULT; }
-\/                           { return DIV; }
-\^                           { return POW; }  /* I am using ^ for power, if it is inconsistent with your testcases, do tell */
-
-=                            { return ASSIGN; }
+=                            { return '='; }
 \+=                          { return ADD_ASSIGN; }
 \-=                          { return MINUS_ASSIGN; }
 \*=                          { return MULT_ASSIGN; }
 \/=                          { return DIV_ASSIGN; }
 
-\<                           { return LT; }
-\>                           { return GT; }
+\<                           { return '<'; }
+\>                           { return '>'; }
 ==                           { return EQ; }
 \<=                          { return LTEQ; }
 \>=                          { return GTEQ; }
@@ -57,15 +56,15 @@ else                         { return ELSE; }
 \|\|                         { return OR; }
 !                            { return NOT; }
 
-\(                           { return LPAREN; }
-\)                           { return RPAREN; }
-\{                           { return LBRACE; }
-\}                           { return RBRACE; }
-\[                           { return LBRACKET; }
-\]                           { return RBRACKET; }
+\(                           { return '('; }
+\)                           { return ')'; }
+\{                           { return '{'; }
+\}                           { return '}'; }
+\[                           { return '['; }
+\]                           { return ']'; }
 
-{digit}+                     { yylval.ival = atoi(yytext); return INT_VAL; }
-{fraction}                   { yylval.name = atof(yytext); return FLT_VAL; }
+{digit}+                    { yylval.ival = atoi(yytext); return INT_VAL; }
+{fraction}                  { yylval.name = atof(yytext); return FLT_VAL; }
 
 {letter_}({letter_}|{digit})* { yylval.strptr = new string(yytext); return STR_ID; }
 ({letter_}|{digit})+          { yylval.strptr = new string(yytext); return STR_VAL; }
