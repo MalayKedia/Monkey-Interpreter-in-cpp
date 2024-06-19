@@ -64,7 +64,7 @@ else                         { return ELSE; }
 \]                           { return ']'; }
 
 {digit}+                    { yylval.ival = atoi(yytext); return INT_VAL; }
-{fraction}                  { yylval.name = atof(yytext); return FLT_VAL; }
+{fraction}                  { yylval.fval = atof(yytext); return FLT_VAL; }
 
 {letter_}({letter_}|{digit})* { yylval.strptr = new string(yytext); return STR_ID; }
 ({letter_}|{digit})+          { yylval.strptr = new string(yytext); return STR_VAL; }
