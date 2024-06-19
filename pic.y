@@ -59,6 +59,7 @@ bool_expression
     : bool_expression AND bool_expression		            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("AND"), $1, $3); }
     | bool_expression OR bool_expression		            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("OR"), $1, $3); }
     | NOT bool_expression					                { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("NOT"), NULL, $2); }
+    | '(' bool_expression ')'					            { $$ = $2; }
     | num_expression LT num_expression			            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("LT"), $1, $3); }
     | num_expression GT num_expression			            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("GT"), $1, $3); }
     | num_expression EQ num_expression			            { $$ = new ASTNode(BOOLEAN_OPERATOR, new string("EQ"), $1, $3); }
@@ -76,6 +77,7 @@ num_expression
     | num_expression '*' num_expression		                { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string("MULTIPLY"), $1, $3); }
     | num_expression '/' num_expression		                { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string("DIVIDE"), $1, $3); }
 	| '-' num_expression %prec Uminus		                { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string ("UMINUS") , NULL, $2 ); }
+    | '(' num_expression ')'					            { $$ = $2; }
 	| INT_VAL									            { $$ = new ASTNode(INT, $1);}
 	| FLT_VAL									            { $$ = new ASTNode(FLOAT, $1); }
     | STR_ID                                                { $$ = new ASTNode(VARIABLE, $1); }
