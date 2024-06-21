@@ -1,11 +1,9 @@
 #include "pic.hh"
 
 void printAST(ASTNode* node, int depth) {
-    if (node == nullptr) return;
-
     // Indentation for better readability
     for (int i = 0; i < depth; ++i) {
-        cout << "  ";
+        cout << " ~";
     }
 
     // Print node type and value
@@ -34,6 +32,9 @@ void printAST(ASTNode* node, int depth) {
         case COMPARISION_OPERATOR:
             cout << "Comparision Operator: " << *node->value << endl;
             break;
+        case DECLARATION_ASSIGNMENT:
+            cout << "Declaration Assignment: " << *node->value << endl;
+            break;
         case ASSIGNMENT:
             cout << "Assignment: " << *node->value << endl;
             break;
@@ -41,31 +42,14 @@ void printAST(ASTNode* node, int depth) {
             cout << "Unknown Type" << endl;
     }
 
-    // Recursively print children nodes
-    if (node->leftChild) {
-        printAST(node->leftChild, depth + 1);
-    }
-    if (node->rightChild) {
-        printAST(node->rightChild, depth + 1);
+    for (ASTNode* child : node->children) {
+        printAST(child, depth + 1);
     }
 }
 
-void printProgram(vector<Statement*>* program) {
+void printProgram(vector<ASTNode*>* program) {
     if (!program) return;
-
-    for (Statement* stmt : *program) {
-        if (stmt) {
-            switch (stmt->stype) {
-                case DECLARATION:
-                    cout << "Declaration:" << endl;
-                    break;
-                case REDEFINITION:
-                    cout << "Redefinition:" << endl;
-                    break;
-                default:
-                    cout << "Unknown Statement Type" << endl;
-            }
-            printAST(stmt->node, 1);
-        }
+    for (ASTNode* node : *program) {
+        printAST(node, 0);
     }
 }
