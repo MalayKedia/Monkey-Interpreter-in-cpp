@@ -38,6 +38,9 @@ void printAST(ASTNode* node, int depth) {
         case ASSIGNMENT:
             cout << "Assignment: " << *node->value << endl;
             break;
+        case EMPTY:
+            cout << "Empty" << endl;
+            break;
         case COMPOUND_STATEMENT:
             cout << "Compound Statement: " << endl;
             break;

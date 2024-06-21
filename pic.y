@@ -49,6 +49,7 @@ stmt_list
 stmt
 	: LET STR_ID '=' expression ';'                 { $$ = new ASTNode(DECLARATION_ASSIGNMENT, $2,  $4); }  
     | STR_ID '=' expression ';'			    		{ $$ = new ASTNode(ASSIGNMENT, $1, $3); }
+    | ';'                                           { $$ = new ASTNode(EMPTY, NULL); }
 
     | STR_ID ADD_ASSIGN expression ';'			    { $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("PLUS"), new ASTNode(VARIABLE, $1), $3)); }
     | STR_ID MINUS_ASSIGN expression ';'			{ $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("MINUS"), new ASTNode(VARIABLE, $1), $3)); }
