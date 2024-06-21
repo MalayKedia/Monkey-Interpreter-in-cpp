@@ -12,6 +12,11 @@ enum Type {
     COMPARISION_OPERATOR,
     DECLARATION_ASSIGNMENT,
     ASSIGNMENT,
+    COMPOUND_STATEMENT,
+    IF_STATEMENT,
+    IF_CONDITION,
+    IF_THEN_STATEMENT,
+    ELSE_STATEMENT,
 };
 
 struct ASTNode {
@@ -32,6 +37,13 @@ struct ASTNode {
         : type(type), value(value) 
         { children = vector<ASTNode*>{child1, child2}; }
     
+    ASTNode(const Type& type, string* value, ASTNode* child1, ASTNode* child2, ASTNode* child3) 
+        : type(type), value(value) 
+        { children = vector<ASTNode*>{child1, child2, child3}; }
+    
+    ASTNode(const Type& type, string* value, vector<ASTNode*> children) 
+        : type(type), value(value), children(children) { }
+
     void addChild(ASTNode* child) {
         children.push_back(child);
     }

@@ -12,8 +12,11 @@
     vector<ASTNode*>* nodeptrlistptr;
 }
 
-%token LET INT_VAL FLT_VAL TRUE_VAL FALSE_VAL STR_ID LT GT LTEQ GTEQ EQ NEQ AND OR NOT ADD_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN POW_ASSIGN
-%token FUNC RETURN IF ELSE STR_VAL
+%token LET INT_VAL FLT_VAL TRUE_VAL FALSE_VAL STR_VAL STR_ID LT GT LTEQ GTEQ EQ NEQ AND OR NOT ADD_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN POW_ASSIGN IF ELSE 
+%token FUNC RETURN
+
+%nonassoc IF_WO_ELSE
+%nonassoc ELSE
 
 %left OR
 %left AND
@@ -52,6 +55,11 @@ stmt
     | STR_ID MULT_ASSIGN expression ';'			    { $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("MULTIPLY"), new ASTNode(VARIABLE, $1), $3));}
     | STR_ID DIV_ASSIGN expression ';'			    { $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("DIVIDE"), new ASTNode(VARIABLE, $1), $3));}
     | STR_ID POW_ASSIGN expression ';'				{ $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("POWER"), new ASTNode(VARIABLE, $1), $3));}
+
+    | '{' stmt_list '}'								{ $$ = new ASTNode(COMPOUND_STATEMENT, NULL, *$2); delete $2; } // A compound statement is a list of statements enclosed in curly braces
+    | IF '(' expression ')' stmt %prec IF_WO_ELSE	{ $$ = new ASTNode(IF_STATEMENT, NULL, new ASTNode(IF_CONDITION, NULL, $3), new ASTNode(IF_THEN_STATEMENT, NULL, $5)); }
+    | IF '(' expression ')' stmt ELSE stmt 		    { $$ = new ASTNode(IF_STATEMENT, NULL, new ASTNode(IF_CONDITION, NULL, $3), new ASTNode(IF_THEN_STATEMENT, NULL, $5), new ASTNode(ELSE_STATEMENT, NULL, $7)); }
+/* Like C++, I will be following standard rule for dangling else, ie else joins with the innermost if */
 ;
 
 expression
