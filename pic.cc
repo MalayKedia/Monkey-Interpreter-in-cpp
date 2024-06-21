@@ -19,17 +19,23 @@ void printAST(ASTNode* node, int depth) {
         case FLOAT:
             cout << "Float: " << *node->value << endl;
             break;
+        case BOOLEAN:
+            cout << "Boolean: " << *node->value << endl;
+            break;
+        case STRING:
+            cout << "String: " << *node->value << endl;
+            break;
         case ARITHMETIC_OPERATOR:
             cout << "Arithmetic Operator: " << *node->value << endl;
-            break;
-        case ASSIGNMENT:
-            cout << "Assignment: " << *node->value << endl;
             break;
         case BOOLEAN_OPERATOR:
             cout << "Boolean Operator: " << *node->value << endl;
             break;
-        case BOOLEAN:
-            cout << "Boolean: " << *node->value << endl;
+        case COMPARISION_OPERATOR:
+            cout << "Comparision Operator: " << *node->value << endl;
+            break;
+        case ASSIGNMENT:
+            cout << "Assignment: " << *node->value << endl;
             break;
         default:
             cout << "Unknown Type" << endl;

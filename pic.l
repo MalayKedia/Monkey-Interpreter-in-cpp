@@ -44,6 +44,7 @@ else                         { return ELSE; }
 \-=                          { return MINUS_ASSIGN; }
 \*=                          { return MULT_ASSIGN; }
 \/=                          { return DIV_ASSIGN; }
+\^=                          { return POW_ASSIGN; }
 
 \<                           { return LT; }
 \>                           { return GT; }
@@ -67,7 +68,7 @@ else                         { return ELSE; }
 {fraction}                  { yylval.strptr = new string(yytext); return FLT_VAL; }
 
 {letter_}({letter_}|{digit})* { yylval.strptr = new string(yytext); return STR_ID; }
-({letter_}|{digit})+          { yylval.strptr = new string(yytext); return STR_VAL; }
+\"([^\n\"]*)\"                { yylval.strptr = new string(yytext + 1, strlen(yytext) - 2); return STR_VAL; }
 
 {ws}                         ; /* Ignore spaces */
 
