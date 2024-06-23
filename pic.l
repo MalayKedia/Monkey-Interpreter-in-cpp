@@ -20,7 +20,6 @@ letter_                     [a-zA-Z_]
 %%
 
 let                          { return LET; }
-func                         { return FUNC; }
 return                       { return RETURN; }
 
 true                         { return TRUE_VAL; }
@@ -28,6 +27,8 @@ false                        { return FALSE_VAL; }
 
 if                           { return IF; }
 else                         { return ELSE; }
+while                        { return WHILE; }
+do                           { return DO; }
 
 ;                            { return ';'; }
 ,                            { return ','; }

@@ -8,8 +8,8 @@ void printAST(ASTNode* node, int depth) {
 
     // Print node type and value
     switch (node->type) {
-        case VARIABLE:
-            cout << "Variable: " << *node->value << endl;
+        case IDENTIFIER:
+            cout << "Identifier: " << *node->value << endl;
             break;
         case INT:
             cout << "Int: " << *node->value << endl;
@@ -33,10 +33,10 @@ void printAST(ASTNode* node, int depth) {
             cout << "Comparision Operator: " << *node->value << endl;
             break;
         case DECLARATION_ASSIGNMENT:
-            cout << "Declaration Assignment: " << *node->value << endl;
+            cout << "Declaration Assignment: " << endl;
             break;
         case ASSIGNMENT:
-            cout << "Assignment: " << *node->value << endl;
+            cout << "Assignment: " << endl;
             break;
         case EMPTY:
             cout << "Empty" << endl;
@@ -55,6 +55,39 @@ void printAST(ASTNode* node, int depth) {
             break;
         case ELSE_STATEMENT:
             cout << "Else Statement: " << endl;
+            break;
+        case WHILE_STATEMENT:
+            cout << "While Statement: " << endl;
+            break;
+        case WHILE_CONDITION:
+            cout << "Condition: " << endl;
+            break;
+        case WHILE_BODY:
+            cout << "Body: " << endl;
+            break;
+        case DO_WHILE_STATEMENT:
+            cout << "Do While Statement: " << endl;
+            break;
+        case DO_WHILE_BODY:
+            cout << "Body: " << endl;
+            break;
+        case DO_WHILE_CONDITION:
+            cout << "Condition: " << endl;
+            break;
+        case CALL_FUNC_PARAM_LIST:
+            cout << "Function Parameter List at time of calling: " << endl;
+            break;
+        case FUNCTION_CALL:
+            cout << "Function Call: " << endl;
+            break;
+        case FORMAL_FUNC_PARAM_LIST:
+            cout << "Function Parameter List at time of definition: " << endl;
+            break;
+        case FUNCTION_DEFINITION:
+            cout << "Function Definition: " << endl;
+            break;
+        case RETURN_STATEMENT:
+            cout << "Return Statement: " << endl;
             break;
         default:
             cout << "Unknown Type" << endl;

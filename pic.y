@@ -12,8 +12,7 @@
     vector<ASTNode*>* nodeptrlistptr;
 }
 
-%token LET INT_VAL FLT_VAL TRUE_VAL FALSE_VAL STR_VAL STR_ID LT GT LTEQ GTEQ EQ NEQ AND OR NOT ADD_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN POW_ASSIGN IF ELSE 
-%token FUNC RETURN
+%token LET INT_VAL FLT_VAL TRUE_VAL FALSE_VAL STR_VAL STR_ID LT GT LTEQ GTEQ EQ NEQ AND OR NOT ADD_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN POW_ASSIGN IF ELSE WHILE DO RETURN
 
 %nonassoc IF_WO_ELSE
 %nonassoc ELSE
@@ -29,7 +28,7 @@
 %right Uminus 														// Right associative unary minus operator
 
 %type <strptr> INT_VAL FLT_VAL STR_ID STR_VAL
-%type <nodeptr> expression stmt
+%type <nodeptr> identifier expression object call_function_parameter_list formal_function_parameter_list function_definition function_call stmt compound_stmt
 %type <nodeptrlistptr> stmt_list
 
 %start program 														// Starting rule for the grammar
@@ -46,21 +45,57 @@ stmt_list
 	|	stmt											{ $$ = new vector<ASTNode*>; $$->push_back($1); }
 ;
 
+compound_stmt
+    :	'{' stmt_list '}'							{ $$ = new ASTNode(COMPOUND_STATEMENT, NULL, *$2); delete $2; } // A compound statement is a list of statements enclosed in curly braces
+;
+
 stmt
-	: LET STR_ID '=' expression ';'                 { $$ = new ASTNode(DECLARATION_ASSIGNMENT, $2,  $4); }  
-    | STR_ID '=' expression ';'			    		{ $$ = new ASTNode(ASSIGNMENT, $1, $3); }
+	: LET identifier '=' object ';'                 { $$ = new ASTNode(DECLARATION_ASSIGNMENT, NULL, $2,  $4); }  
+    | identifier '=' object ';'	     	    		{ $$ = new ASTNode(ASSIGNMENT, NULL, $1, $3); }
     | ';'                                           { $$ = new ASTNode(EMPTY, NULL); }
 
-    | STR_ID ADD_ASSIGN expression ';'			    { $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("PLUS"), new ASTNode(VARIABLE, $1), $3)); }
-    | STR_ID MINUS_ASSIGN expression ';'			{ $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("MINUS"), new ASTNode(VARIABLE, $1), $3)); }
-    | STR_ID MULT_ASSIGN expression ';'			    { $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("MULTIPLY"), new ASTNode(VARIABLE, $1), $3));}
-    | STR_ID DIV_ASSIGN expression ';'			    { $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("DIVIDE"), new ASTNode(VARIABLE, $1), $3));}
-    | STR_ID POW_ASSIGN expression ';'				{ $$ = new ASTNode(ASSIGNMENT, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("POWER"), new ASTNode(VARIABLE, $1), $3));}
+    | identifier ADD_ASSIGN expression ';'		    { $$ = new ASTNode(ASSIGNMENT, NULL, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("PLUS"), $1, $3)); }
+    | identifier MINUS_ASSIGN expression ';'		{ $$ = new ASTNode(ASSIGNMENT, NULL, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("MINUS"), $1, $3)); }
+    | identifier MULT_ASSIGN expression ';'		    { $$ = new ASTNode(ASSIGNMENT, NULL, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("MULTIPLY"), $1, $3));}
+    | identifier DIV_ASSIGN expression ';'		    { $$ = new ASTNode(ASSIGNMENT, NULL, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("DIVIDE"), $1, $3));}
+    | identifier POW_ASSIGN expression ';'			{ $$ = new ASTNode(ASSIGNMENT, NULL, $1, new ASTNode(ARITHMETIC_OPERATOR, new string("POWER"), $1, $3));}
 
-    | '{' stmt_list '}'								{ $$ = new ASTNode(COMPOUND_STATEMENT, NULL, *$2); delete $2; } // A compound statement is a list of statements enclosed in curly braces
+    | compound_stmt 								{ $$ = $1; } // A compound statement is a list of statements enclosed in curly braces
+
     | IF '(' expression ')' stmt %prec IF_WO_ELSE	{ $$ = new ASTNode(IF_STATEMENT, NULL, new ASTNode(IF_CONDITION, NULL, $3), new ASTNode(IF_THEN_STATEMENT, NULL, $5)); }
     | IF '(' expression ')' stmt ELSE stmt 		    { $$ = new ASTNode(IF_STATEMENT, NULL, new ASTNode(IF_CONDITION, NULL, $3), new ASTNode(IF_THEN_STATEMENT, NULL, $5), new ASTNode(ELSE_STATEMENT, NULL, $7)); }
 /* Like C++, I will be following standard rule for dangling else, ie else joins with the innermost if */
+
+    | WHILE '(' expression ')' stmt				    { $$ = new ASTNode(WHILE_STATEMENT, NULL, new ASTNode(WHILE_CONDITION, NULL, $3), new ASTNode(WHILE_BODY, NULL, $5)); }
+    | DO stmt WHILE '(' expression ')' ';'		    { $$ = new ASTNode(DO_WHILE_STATEMENT, NULL, new ASTNode(DO_WHILE_BODY, NULL, $2), new ASTNode(DO_WHILE_CONDITION, NULL, $5)); }
+
+    | RETURN object ';'							    { $$ = new ASTNode(RETURN_STATEMENT, NULL, $2); }
+    | object ';'								    { $$ = new ASTNode(RETURN_STATEMENT, NULL, $1); }
+    | RETURN ';'                                    { $$ = new ASTNode(RETURN_STATEMENT, NULL); }
+;
+
+function_definition
+    : identifier '(' ')' compound_stmt		                            { $$ = new ASTNode(FUNCTION_DEFINITION, NULL, $1, new ASTNode(FORMAL_FUNC_PARAM_LIST, NULL), $4); }
+    | identifier '(' formal_function_parameter_list ')' compound_stmt	{ $$ = new ASTNode(FUNCTION_DEFINITION, NULL, $1, $3, $5); }
+
+formal_function_parameter_list
+    : formal_function_parameter_list ',' identifier	{ $1->addChild($3); $$ = $1; }
+    | identifier									{ $$ = new ASTNode(FORMAL_FUNC_PARAM_LIST, NULL, $1); }
+;
+
+function_call
+    : identifier '(' ')'							    { $$ = new ASTNode(FUNCTION_CALL, NULL, $1, new ASTNode(CALL_FUNC_PARAM_LIST, NULL)); }
+    | identifier '(' call_function_parameter_list ')'	{ $$ = new ASTNode(FUNCTION_CALL, NULL, $1, $3); }
+;
+
+call_function_parameter_list
+    : call_function_parameter_list ',' object	    { $1->addChild($3); $$ = $1; }
+    | object									    { $$ = new ASTNode(CALL_FUNC_PARAM_LIST, NULL, $1); }
+;
+
+object
+    : expression            			            { $$ = $1; }
+    | function_definition                           { $$ = $1; }
 ;
 
 expression
@@ -87,9 +122,15 @@ expression
 	| '-' expression %prec Uminus		            { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string ("UMINUS"), $2 ); }
 /* The above 6 have 4 exclusive operators for numbers with + also valid between 2 strings and * between a string and a int */
     | '(' expression ')'					        { $$ = $2; }
-    | STR_ID                                        { $$ = new ASTNode(VARIABLE, $1); }
+    | identifier                                    { $$ = $1; }
+    | function_call                                 { $$ = $1; }
 /* These 2 can hold either boolean, string or numbers */
     | STR_VAL                                       { $$ = new ASTNode(STRING, $1); }
+;
+
+identifier 
+    : STR_ID                                        { $$ = new ASTNode(IDENTIFIER, $1); }
+/* Can hold any object, including functions and expressions */
 ;
 
 %%
