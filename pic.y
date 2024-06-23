@@ -17,6 +17,7 @@
 %nonassoc IF_WO_ELSE
 %nonassoc ELSE
 
+%right '?' ':'
 %left OR
 %left AND
 %left EQ NEQ
@@ -121,6 +122,8 @@ expression
     | expression '^' expression		                { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string("POWER"), $1, $3); }
 	| '-' expression %prec Uminus		            { $$ = new ASTNode(ARITHMETIC_OPERATOR, new string ("UMINUS"), $2 ); }
 /* The above 6 have 4 exclusive operators for numbers with + also valid between 2 strings and * between a string and a int */
+    | expression '?' expression ':' expression	    { $$ = new ASTNode(TERNARY_OPERATOR, NULL, $1, $3, $5); }
+/* This takes a boolean at first position and a numerical expression in 2nd and 3rd position */
     | '(' expression ')'					        { $$ = $2; }
     | identifier                                    { $$ = $1; }
     | function_call                                 { $$ = $1; }

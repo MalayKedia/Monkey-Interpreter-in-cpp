@@ -32,6 +32,9 @@ void printAST(ASTNode* node, int depth) {
         case COMPARISION_OPERATOR:
             cout << "Comparision Operator: " << *node->value << endl;
             break;
+        case TERNARY_OPERATOR:
+            cout << "Ternary Operator: " << endl;
+            break;
         case DECLARATION_ASSIGNMENT:
             cout << "Declaration Assignment: " << endl;
             break;

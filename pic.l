@@ -33,6 +33,7 @@ do                           { return DO; }
 ;                            { return ';'; }
 ,                            { return ','; }
 :                            { return ':'; }
+\?                            { return '?'; }
 
 \+                           { return '+'; }
 \-                           { return '-'; }

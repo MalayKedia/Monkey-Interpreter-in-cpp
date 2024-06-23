@@ -11,6 +11,10 @@ let c=a;
 c="abcd";
 c*=2;
 
+let d=true?1:2;
+
+d=a<b ? 1 : a<c ? 2:3;
+
 let var1=true;
 let var2=false;
 
