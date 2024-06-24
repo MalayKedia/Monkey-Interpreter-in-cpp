@@ -77,14 +77,11 @@ void printAST(ASTNode* node, int depth) {
         case DO_WHILE_CONDITION:
             cout << "Condition: " << endl;
             break;
-        case CALL_FUNC_PARAM_LIST:
-            cout << "Function Parameter List at time of calling: " << endl;
+        case FUNC_PARAM_LIST:
+            cout << "Function Parameter List: " << endl;
             break;
         case FUNCTION_CALL:
             cout << "Function Call: " << endl;
-            break;
-        case FORMAL_FUNC_PARAM_LIST:
-            cout << "Function Parameter List at time of definition: " << endl;
             break;
         case FUNCTION_DEFINITION:
             cout << "Function Definition: " << endl;

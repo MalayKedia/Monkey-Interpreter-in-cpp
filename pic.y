@@ -29,7 +29,7 @@
 %right Uminus 														// Right associative unary minus operator
 
 %type <strptr> INT_VAL FLT_VAL STR_ID STR_VAL
-%type <nodeptr> identifier expression object call_function_parameter_list formal_function_parameter_list function_definition function_call stmt compound_stmt
+%type <nodeptr> identifier expression object function_parameter_list function_definition function_call stmt compound_stmt
 %type <nodeptrlistptr> stmt_list
 
 %start program 														// Starting rule for the grammar
@@ -76,22 +76,17 @@ stmt
 ;
 
 function_definition
-    : identifier '(' ')' compound_stmt		                            { $$ = new ASTNode(FUNCTION_DEFINITION, NULL, $1, new ASTNode(FORMAL_FUNC_PARAM_LIST, NULL), $4); }
-    | identifier '(' formal_function_parameter_list ')' compound_stmt	{ $$ = new ASTNode(FUNCTION_DEFINITION, NULL, $1, $3, $5); }
-
-formal_function_parameter_list
-    : formal_function_parameter_list ',' identifier	{ $1->addChild($3); $$ = $1; }
-    | identifier									{ $$ = new ASTNode(FORMAL_FUNC_PARAM_LIST, NULL, $1); }
-;
+    : identifier '(' ')' compound_stmt		                    { $$ = new ASTNode(FUNCTION_DEFINITION, NULL, $1, new ASTNode(FUNC_PARAM_LIST, NULL), $4); }
+    | identifier '(' function_parameter_list ')' compound_stmt	{ $$ = new ASTNode(FUNCTION_DEFINITION, NULL, $1, $3, $5); }
 
 function_call
-    : identifier '(' ')'							    { $$ = new ASTNode(FUNCTION_CALL, NULL, $1, new ASTNode(CALL_FUNC_PARAM_LIST, NULL)); }
-    | identifier '(' call_function_parameter_list ')'	{ $$ = new ASTNode(FUNCTION_CALL, NULL, $1, $3); }
+    : identifier '(' ')'							{ $$ = new ASTNode(FUNCTION_CALL, NULL, $1, new ASTNode(FUNC_PARAM_LIST, NULL)); }
+    | identifier '(' function_parameter_list ')'	{ $$ = new ASTNode(FUNCTION_CALL, NULL, $1, $3); }
 ;
 
-call_function_parameter_list
-    : call_function_parameter_list ',' object	    { $1->addChild($3); $$ = $1; }
-    | object									    { $$ = new ASTNode(CALL_FUNC_PARAM_LIST, NULL, $1); }
+function_parameter_list
+    : function_parameter_list ',' object	        { $1->addChild($3); $$ = $1; }
+    | object									    { $$ = new ASTNode(FUNC_PARAM_LIST, NULL, $1); }
 ;
 
 object
