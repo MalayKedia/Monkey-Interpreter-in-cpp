@@ -76,6 +76,7 @@ do                           { return DO; }
 \"([^\n\"]*)\"                { yylval.strptr = new string(yytext + 1, strlen(yytext) - 2); return STR_VAL; }
 
 {ws}                         ; /* Ignore spaces */
+"//"[^\n]*\n                 ; /* Ignore comments */
 
 .                            { fprintf(stderr, "unknown_token: %d\n", yytext[0]); exit(1); }
 
