@@ -20,7 +20,10 @@ letter_                     [a-zA-Z_]
 %%
 
 let                          { return LET; }
+fn                           { return FN; }
 return                       { return RETURN; }
+
+print                        { return PRINT; }
 
 true                         { return TRUE_VAL; }
 false                        { return FALSE_VAL; }

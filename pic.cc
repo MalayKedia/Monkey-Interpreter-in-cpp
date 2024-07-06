@@ -47,6 +47,9 @@ void printAST(ASTNode* node, int depth) {
         case COMPOUND_STATEMENT:
             cout << "Compound Statement: " << endl;
             break;
+        case PRINT_STATEMENT:
+            cout << "Print Statement: " << endl;
+            break;
         case IF_STATEMENT:
             cout << "If Statement: " << endl;
             break;
@@ -77,11 +80,14 @@ void printAST(ASTNode* node, int depth) {
         case DO_WHILE_CONDITION:
             cout << "Condition: " << endl;
             break;
-        case FUNC_PARAM_LIST:
-            cout << "Function Parameter List: " << endl;
+        case CALL_FUNC_PARAM_LIST:
+            cout << "Function Parameter List at call: " << endl;
             break;
         case FUNCTION_CALL:
             cout << "Function Call: " << endl;
+            break;
+        case FORMAL_FUNC_PARAM_LIST:
+            cout << "Formal Function Parameter List: " << endl;
             break;
         case FUNCTION_DEFINITION:
             cout << "Function Definition: " << endl;
