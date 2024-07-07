@@ -145,7 +145,12 @@ identifier
 /* ADDITIONAL C CODE */
 
 int main() { 
-  yyparse();
-  printProgram(program_statement_list);
+    yyparse();
+
+    Scope* global_scope = new Scope();
+    for (auto stmt : *program_statement_list) {
+        executeAST(stmt, global_scope);
+    }
+
   return 0;
 }

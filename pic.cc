@@ -1,112 +1,229 @@
 #include "pic.hh"
+#include "objects.cpp"
+#include "env.cpp"
 
-void printAST(ASTNode* node, int depth) {
-    // Indentation for better readability
-    for (int i = 0; i < depth; ++i) {
-        cout << " ~";
-    }
-
-    // Print node type and value
+Object* executeAST(ASTNode* node, Scope* sTable){
     switch (node->type) {
-        case IDENTIFIER:
-            cout << "Identifier: " << *node->value << endl;
-            break;
         case INT:
-            cout << "Int: " << *node->value << endl;
-            break;
         case FLOAT:
-            cout << "Float: " << *node->value << endl;
-            break;
+            return new NumberObject(stod(*node->value));
         case BOOLEAN:
-            cout << "Boolean: " << *node->value << endl;
-            break;
+            return new BoolObject(*node->value == "true");
         case STRING:
-            cout << "String: " << *node->value << endl;
-            break;
+            return new StringObject(node->value);
+        case IDENTIFIER:
+            return sTable->checkAndReturnClone(*node->value);
+
         case ARITHMETIC_OPERATOR:
-            cout << "Arithmetic Operator: " << *node->value << endl;
-            break;
+        {
+            if (*node->value == "UMINUS"){
+                Object* exp = executeAST(node->children[0], sTable);
+
+                if (exp->otype != ObjectType::NUMBER){
+                    cerr<<"Expected a number"<<endl;
+                    delete exp;
+                    return NULL;
+                }
+                else{
+                    NumberObject* numExp = dynamic_cast<NumberObject*>(exp);
+                    *(double*)(numExp->value) = -(*(double*)(numExp->value));
+                    return exp;
+                }
+            }
+            else{
+                Object* lhs = executeAST(node->children[0], sTable);
+                Object* rhs = executeAST(node->children[1], sTable);
+
+                if (lhs->otype != ObjectType::NUMBER || rhs->otype != ObjectType::NUMBER){
+                    cerr<<"Expected a number"<<endl;
+                    return NULL;
+                }
+                else{
+                    NumberObject* numLhs = dynamic_cast<NumberObject*>(lhs);
+                    NumberObject* numRhs = dynamic_cast<NumberObject*>(rhs);
+                    
+                    if (*node->value == "PLUS"){
+                        *(double*)(numLhs->value) += *(double*)(numRhs->value);
+                    }
+                    else if (*node->value == "MINUS"){
+                        *(double*)(numLhs->value) -= *(double*)(numRhs->value);
+                    }
+                    else if (*node->value == "MULTIPLY"){
+                        *(double*)(numLhs->value) *= *(double*)(numRhs->value);
+                    }
+                    else if (*node->value == "DIVIDE"){
+                        if (*(double*)(numRhs->value) == 0){
+                            cerr<<"Division by zero"<<endl;
+                            delete lhs; delete rhs;
+                            return NULL;
+                        }
+                        else
+                            *(double*)(numLhs->value) /= *(double*)(numRhs->value);
+                    }
+                    else if (*node->value == "POWER"){
+                        *(double*)(numLhs->value) = pow(*(double*)(numLhs->value), *(double*)(numRhs->value));
+                    }
+                    else {
+                        cerr<<"Unknown operator"<<endl;
+                        delete lhs; delete rhs;
+                        return NULL;
+                    }
+                    delete rhs;
+                    return lhs;
+                }
+            }
+        }
+
         case BOOLEAN_OPERATOR:
-            cout << "Boolean Operator: " << *node->value << endl;
-            break;
+        {
+            if (*node->value == "NOT"){
+                Object* exp = executeAST(node->children[0], sTable);
+
+                if (exp->otype != ObjectType::BOOL){
+                    cerr<<"Expected a boolean"<<endl;
+                    delete exp;
+                    return NULL;
+                }
+                else{
+                    BoolObject* boolExp = dynamic_cast<BoolObject*>(exp);
+                    *(bool*)(boolExp->value) = !(*(bool*)(boolExp->value));
+                    return exp;
+                }
+            }
+            else{
+                Object* lhs = executeAST(node->children[0], sTable);
+                Object* rhs = executeAST(node->children[1], sTable);
+
+                if (lhs->otype != ObjectType::BOOL || rhs->otype != ObjectType::BOOL){
+                    cerr<<"Expected a boolean"<<endl;
+                    delete lhs; delete rhs;
+                    return NULL;
+                }
+                else{
+                    BoolObject* boolLhs = dynamic_cast<BoolObject*>(lhs);
+                    BoolObject* boolRhs = dynamic_cast<BoolObject*>(rhs);
+
+                    if (*node->value == "AND"){
+                        *(bool*)(boolLhs->value) = (*(bool*)(boolLhs->value) && *(bool*)(boolRhs->value));
+                    }
+                    else if (*node->value == "OR"){
+                        *(bool*)(boolLhs->value) = (*(bool*)(boolLhs->value) || *(bool*)(boolRhs->value));
+                    }
+                    else {
+                        cerr<<"Unknown operator"<<endl;
+                        delete lhs; delete rhs;
+                        return NULL;
+                    }
+                    delete rhs;
+                    return lhs;
+                }
+            }
+        }
+
         case COMPARISION_OPERATOR:
-            cout << "Comparision Operator: " << *node->value << endl;
-            break;
+        {
+            Object* lhs = executeAST(node->children[0], sTable);
+            Object* rhs = executeAST(node->children[1], sTable);
+
+            if (lhs->otype != ObjectType::NUMBER || rhs->otype != ObjectType::NUMBER){
+                cerr<<"Expected a number"<<endl;
+                return NULL;
+            }
+            else{
+                NumberObject* numLhs = dynamic_cast<NumberObject*>(lhs);
+                NumberObject* numRhs = dynamic_cast<NumberObject*>(rhs);
+
+                if (*node->value == "EQ"){
+                    BoolObject* boolobj = new BoolObject(*(double*)(numLhs->value) == *(double*)(numRhs->value));
+                    delete lhs; delete rhs;
+                    return boolobj;
+                }
+                else if (*node->value == "NEQ"){
+                    BoolObject* boolobj = new BoolObject(*(double*)(numLhs->value) != *(double*)(numRhs->value));
+                    delete lhs; delete rhs;
+                    return boolobj;
+                }
+                else if (*node->value == "LT"){
+                    BoolObject* boolobj = new BoolObject(*(double*)(numLhs->value) < *(double*)(numRhs->value));
+                    delete lhs; delete rhs;
+                    return boolobj;
+                }
+                else if (*node->value == "GT"){
+                    BoolObject* boolobj = new BoolObject(*(double*)(numLhs->value) > *(double*)(numRhs->value));
+                    delete lhs; delete rhs;
+                    return boolobj;
+                }
+                else if (*node->value == "LTEQ"){
+                    BoolObject* boolobj = new BoolObject(*(double*)(numLhs->value) <= *(double*)(numRhs->value));
+                    delete lhs; delete rhs;
+                    return boolobj;
+                }
+                else if (*node->value == "GTEQ"){
+                    BoolObject* boolobj = new BoolObject(*(double*)(numLhs->value) >= *(double*)(numRhs->value));
+                    delete lhs; delete rhs;
+                    return boolobj;
+                }
+                else {
+                    cerr<<"Unknown operator"<<endl;
+                    delete lhs; delete rhs;
+                    return NULL;
+                }
+            }
+        }
+
         case TERNARY_OPERATOR:
-            cout << "Ternary Operator: " << endl;
-            break;
+        {
+            Object* condition = executeAST(node->children[0], sTable);
+
+            if (condition->otype != ObjectType::BOOL){
+                cerr<<"Expected a boolean"<<endl;
+                delete condition;
+                return NULL;
+            }
+            else{
+                BoolObject* boolCondition = dynamic_cast<BoolObject*>(condition);
+                Object* result = NULL;
+
+                if (*(bool*)(boolCondition->value)){
+                    result = executeAST(node->children[1], sTable);
+                }
+                else{
+                    result = executeAST(node->children[2], sTable);
+                }
+                delete condition;
+                return result;
+            }
+        }
+
         case DECLARATION_ASSIGNMENT:
-            cout << "Declaration Assignment: " << endl;
-            break;
+            sTable->insertNew(*node->children[0]->value, executeAST(node->children[1], sTable));
+            return NULL;
         case ASSIGNMENT:
-            cout << "Assignment: " << endl;
-            break;
+            sTable->checkAndUpdateVal(*node->children[0]->value, executeAST(node->children[1], sTable));
+            return NULL;
         case EMPTY:
-            cout << "Empty" << endl;
-            break;
+            return NULL;
+
         case COMPOUND_STATEMENT:
-            cout << "Compound Statement: " << endl;
-            break;
+        {
+            Scope* newScope = new Scope(sTable);
+            for (ASTNode* child : node->children){
+                executeAST(child, newScope);
+            }
+            delete newScope;
+            return NULL;
+        }
+
         case PRINT_STATEMENT:
-            cout << "Print Statement: " << endl;
-            break;
-        case IF_STATEMENT:
-            cout << "If Statement: " << endl;
-            break;
-        case IF_CONDITION:
-            cout << "Condition: " << endl;
-            break;
-        case IF_THEN_STATEMENT:
-            cout << "Then Statement: " << endl;
-            break;
-        case ELSE_STATEMENT:
-            cout << "Else Statement: " << endl;
-            break;
-        case WHILE_STATEMENT:
-            cout << "While Statement: " << endl;
-            break;
-        case WHILE_CONDITION:
-            cout << "Condition: " << endl;
-            break;
-        case WHILE_BODY:
-            cout << "Body: " << endl;
-            break;
-        case DO_WHILE_STATEMENT:
-            cout << "Do While Statement: " << endl;
-            break;
-        case DO_WHILE_BODY:
-            cout << "Body: " << endl;
-            break;
-        case DO_WHILE_CONDITION:
-            cout << "Condition: " << endl;
-            break;
-        case CALL_FUNC_PARAM_LIST:
-            cout << "Function Parameter List at call: " << endl;
-            break;
-        case FUNCTION_CALL:
-            cout << "Function Call: " << endl;
-            break;
-        case FORMAL_FUNC_PARAM_LIST:
-            cout << "Formal Function Parameter List: " << endl;
-            break;
-        case FUNCTION_DEFINITION:
-            cout << "Function Definition: " << endl;
-            break;
-        case RETURN_STATEMENT:
-            cout << "Return Statement: " << endl;
-            break;
+        {
+            Object* result = executeAST(node->children[0], sTable);
+            cout<<result->str()<<endl;
+            delete result;
+            return NULL;
+        }
+
         default:
-            cout << "Unknown Type" << endl;
-    }
-
-    for (ASTNode* child : node->children) {
-        printAST(child, depth + 1);
-    }
-}
-
-void printProgram(vector<ASTNode*>* program) {
-    if (!program) return;
-    for (ASTNode* node : *program) {
-        printAST(node, 0);
+            cerr << "Unknown Type" << endl;
+            return NULL;
     }
 }

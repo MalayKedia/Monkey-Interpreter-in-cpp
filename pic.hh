@@ -1,6 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+#ifndef ASTNODE_H
+#define ASTNODE_H
+
 enum Type {
     IDENTIFIER,
 
@@ -70,3 +73,5 @@ struct ASTNode {
         children.push_back(child);
     }
 };
+
+#endif

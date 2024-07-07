@@ -9,6 +9,7 @@ SCAN = $(FNAME).l
 PARSE = $(FNAME).y
 HEADER = $(FNAME).hh
 FILE = $(FNAME).cc
+EXTRA_FILES = env.cpp objects.cpp
 
 OBJ = scan.o parse.tab.o
 CFLAGS = -g
@@ -25,7 +26,7 @@ parse.tab.o: parse.tab.c parse.tab.h $(FILE) $(HEADER)
 scan.c : $(SCAN) $(HEADER) parse.tab.h
 	$(FLEX) -l --yylineno -o scan.c $(SCAN)
 
-parse.tab.c parse.tab.h : $(PARSE) $(HEADER) $(FILE)
+parse.tab.c parse.tab.h : $(PARSE) $(HEADER) $(FILE) $(EXTRA_FILES)
 	$(BISON) -b parse -dv  $(PARSE)
 
 clean :
