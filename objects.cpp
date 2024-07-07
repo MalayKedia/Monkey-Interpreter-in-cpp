@@ -93,15 +93,51 @@ struct StringObject : Object{
 };
 
 struct FunctionObject : Object{
-    ASTNode* funcptr;
+    vector<string*> params;
+    vector<ASTNode*>* funcBody;
 
-    FunctionObject(ASTNode* Node): funcptr(Node) {
+    FunctionObject(ASTNode* funcDefASTNode) {
         otype = ObjectType::FUNCTION;
+        value = NULL;
+
+        params= vector<string*>();
+        for (auto param : funcDefASTNode->children[0]->children) {
+            params.push_back(param->value);
+        }
+
+        funcBody = new vector<ASTNode*>();
+        for (auto stmt : funcDefASTNode->children[1]->children) {
+            funcBody->push_back(stmt->deepCopyNode());
+        }
     }
-    
+
+    FunctionObject(const FunctionObject& other) {
+        otype = other.otype;
+        value = NULL;
+        params = other.params;
+        funcBody = other.funcBody;
+    }
+
     ~FunctionObject() override {
         delete (FunctionObject*)value;
-        delete funcptr;
+        
+        for (auto param : params) {
+            delete param;
+        }
+
+        for (auto stmt : *funcBody) {
+            delete stmt;
+        }
+    }
+
+    string str() const override{
+        cerr<<"Print for function not implemented"<<endl;
+        return "";
+    }
+
+    FunctionObject* clone() const override {
+        // I am providing a shallow copy here.
+        return new FunctionObject(*this);
     }
 };
 

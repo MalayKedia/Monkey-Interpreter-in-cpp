@@ -72,6 +72,21 @@ struct ASTNode {
     void addChild(ASTNode* child) {
         children.push_back(child);
     }
+
+    ASTNode* deepCopyNode() {
+        ASTNode* copy = new ASTNode(type, value);
+        for (ASTNode* child : children) {
+            copy->addChild(child->deepCopyNode());
+        }
+    return copy;
+    }
+
+    ~ASTNode() {
+        delete value;
+        for (ASTNode* child : children) {
+            delete child;
+        }
+    }
 };
 
 #endif

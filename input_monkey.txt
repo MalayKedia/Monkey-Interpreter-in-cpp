@@ -47,3 +47,7 @@ print(true?1:2);     // 1
 
 print(a);                                   // 2
 let d=a<0 ? 100: a<4 ? -20:30; print(d);    // -20 
+
+let addOne=fn(a){a+1;};
+
+print(addOne(2));       // 3

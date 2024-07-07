@@ -75,7 +75,7 @@ stmt
 
     | RETURN object ';'							    { $$ = new ASTNode(RETURN_STATEMENT, NULL, $2); }
     | object ';'								    { $$ = new ASTNode(RETURN_STATEMENT, NULL, $1); }
-    | RETURN ';'                                    { $$ = new ASTNode(RETURN_STATEMENT, NULL); }
+    | RETURN ';'                                    { $$ = new ASTNode(RETURN_STATEMENT, NULL, NULL); }
 ;
 
 function_definition
@@ -148,8 +148,9 @@ int main() {
     yyparse();
 
     Scope* global_scope = new Scope();
+    Object* obj = NULL;
     for (auto stmt : *program_statement_list) {
-        executeAST(stmt, global_scope);
+        executeAST(stmt, global_scope, obj);
     }
 
   return 0;
