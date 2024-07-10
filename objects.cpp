@@ -95,10 +95,12 @@ struct StringObject : Object{
 struct FunctionObject : Object{
     vector<string*> params;
     vector<ASTNode*>* funcBody;
+    unordered_map<string, Object*>* closure;
 
     FunctionObject(ASTNode* funcDefASTNode) {
         otype = ObjectType::FUNCTION;
         value = NULL;
+        closure = new unordered_map<string, Object*>();
 
         params= vector<string*>();
         for (auto param : funcDefASTNode->children[0]->children) {
@@ -116,6 +118,7 @@ struct FunctionObject : Object{
         value = NULL;
         params = other.params;
         funcBody = other.funcBody;
+        closure = other.closure;
     }
 
     ~FunctionObject() override {
@@ -127,6 +130,11 @@ struct FunctionObject : Object{
 
         for (auto stmt : *funcBody) {
             delete stmt;
+        }
+
+        for (auto it = closure->begin(); it != closure->end(); ) {
+            delete it->second;
+            it = closure->erase(it);
         }
     }
 

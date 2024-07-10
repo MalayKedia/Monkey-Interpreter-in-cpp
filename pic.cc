@@ -260,6 +260,10 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
             
             Scope* funcScope = new Scope(sTable);
 
+            for (auto it = func->closure->begin(); it != func->closure->end(); it++){
+                funcScope->insertNew(it->first, it->second);
+            }
+
             for (int i = 0; i < args_call.size(); i++){
                 funcScope->insertNew(*(func->params[i]), args_call[i]);
             }
@@ -267,12 +271,19 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
             for (ASTNode* stmt : *(func->funcBody)){
                 executeAST(stmt, funcScope, return_obj);
             }
-            delete funcScope;
 
             if (return_obj != NULL){
-                Object* ret = return_obj;
+                Object* return_obj_store = return_obj;
                 return_obj = NULL;
-                return ret;
+                
+                if (return_obj_store->otype == ObjectType::FUNCTION){
+                    FunctionObject* ret_func = dynamic_cast<FunctionObject*>(return_obj_store);                    
+                    for (auto it = funcScope->symbolTable.begin(); it != funcScope->symbolTable.end(); it++) {
+                        (*ret_func->closure)[it->first] = it->second->clone();
+                    }
+                }
+                delete funcScope;
+                return return_obj_store;
             }
             else {
                 cerr<<"No return statement found"<<endl;

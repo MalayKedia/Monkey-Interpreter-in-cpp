@@ -51,3 +51,36 @@ let d=a<0 ? 100: a<4 ? -20:30; print(d);    // -20
 let addOne=fn(a){a+1;};
 
 print(addOne(2));       // 3
+
+print(addOne(addOne(4))); //6
+
+let newAdder = fn(x) {
+  return fn(y) {x + y; };
+};
+
+let addTwo = newAdder(2);
+
+let c1=addTwo(3);
+print(c1);       // 5
+
+let addThree = newAdder(3);
+print(addThree(4)+1);   // 8
+
+let newnewAdder = fn(a, b) {
+    fn(c) { a + b + c; };
+};
+
+let adder = newnewAdder(1, 2);
+
+let b2=adder(8); 
+print(b2);   // 11
+
+let twice = fn(f, x) {
+  return f(f(x));
+};
+
+let addTwo2 = fn(x) {
+  return x + 2;
+};
+
+print(twice(addTwo2, 2)); // 6
