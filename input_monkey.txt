@@ -63,8 +63,12 @@ let addTwo = newAdder(2);
 let c1=addTwo(3);
 print(c1);       // 5
 
+print(addTwo(4)); // 6
+
 let addThree = newAdder(3);
 print(addThree(4)+1);   // 8
+
+print(addThree(2*2+3)); //10
 
 let newnewAdder = fn(a, b) {
     fn(c) { a + b + c; };
@@ -84,3 +88,5 @@ let addTwo2 = fn(x) {
 };
 
 print(twice(addTwo2, 2)); // 6
+
+print(twice(addThree, 5)); // 11

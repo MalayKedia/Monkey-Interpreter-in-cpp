@@ -97,20 +97,11 @@ struct FunctionObject : Object{
     vector<ASTNode*>* funcBody;
     unordered_map<string, Object*>* closure;
 
-    FunctionObject(ASTNode* funcDefASTNode) {
+    FunctionObject() {
         otype = ObjectType::FUNCTION;
         value = NULL;
-        closure = new unordered_map<string, Object*>();
-
-        params= vector<string*>();
-        for (auto param : funcDefASTNode->children[0]->children) {
-            params.push_back(param->value);
-        }
-
         funcBody = new vector<ASTNode*>();
-        for (auto stmt : funcDefASTNode->children[1]->children) {
-            funcBody->push_back(stmt->deepCopyNode());
-        }
+        closure = new unordered_map<string, Object*>();
     }
 
     FunctionObject(const FunctionObject& other) {

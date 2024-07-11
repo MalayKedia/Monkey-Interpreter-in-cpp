@@ -227,7 +227,18 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
         }
 
         case FUNCTION_DEFINITION:
-            return new FunctionObject(node);
+        {
+            FunctionObject* func = new FunctionObject();
+
+            for (auto param : node->children[0]->children) {
+                func->params.push_back(param->value);
+            }
+
+            for (auto stmt : node->children[1]->children) {
+                func->funcBody->push_back(stmt->deepCopyNode());
+            }
+            return func;
+        }
 
         case RETURN_STATEMENT:
             return_obj = executeAST(node->children[0], sTable, return_obj);
@@ -261,7 +272,7 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
             Scope* funcScope = new Scope(sTable);
 
             for (auto it = func->closure->begin(); it != func->closure->end(); it++){
-                funcScope->insertNew(it->first, it->second);
+                funcScope->insertNew(it->first, it->second->clone());
             }
 
             for (int i = 0; i < args_call.size(); i++){
