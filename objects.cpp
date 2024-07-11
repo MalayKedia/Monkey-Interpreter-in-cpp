@@ -93,7 +93,7 @@ struct StringObject : Object{
 };
 
 struct FunctionObject : Object{
-    vector<string*> params;
+    vector<string> params;
     vector<ASTNode*>* funcBody;
     unordered_map<string, Object*>* closure;
 
@@ -107,21 +107,21 @@ struct FunctionObject : Object{
     FunctionObject(const FunctionObject& other) {
         otype = other.otype;
         value = NULL;
-        params = other.params;
+
+        for (auto param : other.params) {
+            params.push_back(param);
+        }
+
         funcBody = other.funcBody;
-        closure = other.closure;
+
+        closure = new unordered_map<string, Object*>();
+        for (auto it = other.closure->begin(); it != other.closure->end(); it++) {
+            closure->insert({it->first, it->second->clone()});
+        }
     }
 
     ~FunctionObject() override {
         delete (FunctionObject*)value;
-        
-        for (auto param : params) {
-            delete param;
-        }
-
-        for (auto stmt : *funcBody) {
-            delete stmt;
-        }
 
         for (auto it = closure->begin(); it != closure->end(); ) {
             delete it->second;
@@ -135,7 +135,6 @@ struct FunctionObject : Object{
     }
 
     FunctionObject* clone() const override {
-        // I am providing a shallow copy here.
         return new FunctionObject(*this);
     }
 };

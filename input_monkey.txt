@@ -90,3 +90,33 @@ let addTwo2 = fn(x) {
 print(twice(addTwo2, 2)); // 6
 
 print(twice(addThree, 5)); // 11
+
+let const=5; 
+
+let newfunction = fn(x){
+    print(const);
+    let doubler = fn(y){
+      return y*2;
+    };
+    return doubler(x);
+};
+
+print(newfunction(10)); // 5 20
+
+const+=2;
+
+print(newfunction(30)); // 7 60
+
+let f1= fn(a){
+    return fn(b){
+      return fn(c){
+        a+b+c;
+      };
+    };
+};
+
+let g1=f1(100);
+let g2=g1(222);
+let g3=g2(10000);
+
+print(g3); // 10322
