@@ -48,34 +48,34 @@ struct ASTNode {
     Type type;
     string* value;
     
-    vector<ASTNode*> children;
+    vector<ASTNode*>* children;
 
     ASTNode(const Type& type, string* value) 
         : type(type), value(value) 
-        { children = vector<ASTNode*>(); }
+        { children = new vector<ASTNode*>(); }
     
     ASTNode(const Type& type, string* value, ASTNode* child) 
         : type(type), value(value) 
-        { children = vector<ASTNode*>{child}; }
+        { children = new vector<ASTNode*>{child}; }
     
     ASTNode(const Type& type, string* value, ASTNode* child1, ASTNode* child2) 
         : type(type), value(value) 
-        { children = vector<ASTNode*>{child1, child2}; }
+        { children = new vector<ASTNode*>{child1, child2}; }
     
     ASTNode(const Type& type, string* value, ASTNode* child1, ASTNode* child2, ASTNode* child3) 
         : type(type), value(value) 
-        { children = vector<ASTNode*>{child1, child2, child3}; }
+        { children = new vector<ASTNode*>{child1, child2, child3}; }
     
-    ASTNode(const Type& type, string* value, vector<ASTNode*> children) 
+    ASTNode(const Type& type, string* value, vector<ASTNode*>* children) 
         : type(type), value(value), children(children) { }
 
     void addChild(ASTNode* child) {
-        children.push_back(child);
+        children->push_back(child);
     }
 
     ASTNode* deepCopyNode() {
         ASTNode* copy = new ASTNode(type, value);
-        for (ASTNode* child : children) {
+        for (ASTNode* child : *children) {
             copy->addChild(child->deepCopyNode());
         }
     return copy;
@@ -83,9 +83,10 @@ struct ASTNode {
 
     ~ASTNode() {
         delete value;
-        for (ASTNode* child : children) {
+        for (ASTNode* child : *children) {
             delete child;
         }
+        delete children;
     }
 };
 

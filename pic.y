@@ -48,7 +48,7 @@ stmt_list
 ;
 
 compound_stmt
-    :	'{' stmt_list '}'							{ $$ = new ASTNode(COMPOUND_STATEMENT, NULL, *$2); delete $2; } // A compound statement is a list of statements enclosed in curly braces
+    :	'{' stmt_list '}'							{ $$ = new ASTNode(COMPOUND_STATEMENT, NULL, $2); } // A compound statement is a list of statements enclosed in curly braces
 ;
 
 stmt
@@ -75,7 +75,7 @@ stmt
 
     | RETURN object ';'							    { $$ = new ASTNode(RETURN_STATEMENT, NULL, $2); }
     | object ';'								    { $$ = new ASTNode(RETURN_STATEMENT, NULL, $1); }
-    | RETURN ';'                                    { $$ = new ASTNode(RETURN_STATEMENT, NULL, NULL); }
+    | RETURN ';'                                    { $$ = new ASTNode(RETURN_STATEMENT, NULL); }
 ;
 
 function_definition

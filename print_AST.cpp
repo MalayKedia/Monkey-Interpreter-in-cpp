@@ -1,5 +1,8 @@
 #include "pic.hh"
 
+# ifndef PRINT_AST_H
+# define PRINT_AST_H
+
 void printAST(ASTNode* node, int depth) {
     // Indentation for better readability
     for (int i = 0; i < depth; ++i) {
@@ -99,7 +102,7 @@ void printAST(ASTNode* node, int depth) {
             cout << "Unknown Type" << endl;
     }
 
-    for (ASTNode* child : node->children) {
+    for (ASTNode* child : *(node->children)) {
         printAST(child, depth + 1);
     }
 }
@@ -110,3 +113,5 @@ void printProgram(vector<ASTNode*>* program) {
         printAST(node, 0);
     }
 }
+
+# endif

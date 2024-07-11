@@ -21,7 +21,7 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
         case ARITHMETIC_OPERATOR:
         {
             if (*node->value == "UMINUS"){
-                Object* exp = executeAST(node->children[0], sTable, return_obj);
+                Object* exp = executeAST((*node->children)[0], sTable, return_obj);
 
                 if (exp->otype != ObjectType::NUMBER){
                     cerr<<"Expected a number"<<endl;
@@ -35,8 +35,8 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
                 }
             }
             else{
-                Object* lhs = executeAST(node->children[0], sTable, return_obj);
-                Object* rhs = executeAST(node->children[1], sTable, return_obj);
+                Object* lhs = executeAST((*node->children)[0], sTable, return_obj);
+                Object* rhs = executeAST((*node->children)[1], sTable, return_obj);
 
                 if (lhs->otype != ObjectType::NUMBER || rhs->otype != ObjectType::NUMBER){
                     cerr<<"Expected a number"<<endl;
@@ -81,7 +81,7 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
         case BOOLEAN_OPERATOR:
         {
             if (*node->value == "NOT"){
-                Object* exp = executeAST(node->children[0], sTable, return_obj);
+                Object* exp = executeAST((*node->children)[0], sTable, return_obj);
 
                 if (exp->otype != ObjectType::BOOL){
                     cerr<<"Expected a boolean"<<endl;
@@ -95,8 +95,8 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
                 }
             }
             else{
-                Object* lhs = executeAST(node->children[0], sTable, return_obj);
-                Object* rhs = executeAST(node->children[1], sTable, return_obj);
+                Object* lhs = executeAST((*node->children)[0], sTable, return_obj);
+                Object* rhs = executeAST((*node->children)[1], sTable, return_obj);
 
                 if (lhs->otype != ObjectType::BOOL || rhs->otype != ObjectType::BOOL){
                     cerr<<"Expected a boolean"<<endl;
@@ -126,8 +126,8 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
 
         case COMPARISION_OPERATOR:
         {
-            Object* lhs = executeAST(node->children[0], sTable, return_obj);
-            Object* rhs = executeAST(node->children[1], sTable, return_obj);
+            Object* lhs = executeAST((*node->children)[0], sTable, return_obj);
+            Object* rhs = executeAST((*node->children)[1], sTable, return_obj);
 
             if (lhs->otype != ObjectType::NUMBER || rhs->otype != ObjectType::NUMBER){
                 cerr<<"Expected a number"<<endl;
@@ -177,7 +177,7 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
 
         case TERNARY_OPERATOR:
         {
-            Object* condition = executeAST(node->children[0], sTable, return_obj);
+            Object* condition = executeAST((*node->children)[0], sTable, return_obj);
 
             if (condition->otype != ObjectType::BOOL){
                 cerr<<"Expected a boolean"<<endl;
@@ -189,10 +189,10 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
                 Object* result = NULL;
 
                 if (*(bool*)(boolCondition->value)){
-                    result = executeAST(node->children[1], sTable, return_obj);
+                    result = executeAST((*node->children)[1], sTable, return_obj);
                 }
                 else{
-                    result = executeAST(node->children[2], sTable, return_obj);
+                    result = executeAST((*node->children)[2], sTable, return_obj);
                 }
                 delete condition;
                 return result;
@@ -200,10 +200,10 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
         }
 
         case DECLARATION_ASSIGNMENT:
-            sTable->insertNew(*node->children[0]->value, executeAST(node->children[1], sTable, return_obj));
+            sTable->insertNew(*(*node->children)[0]->value, executeAST((*node->children)[1], sTable, return_obj));
             return NULL;
         case ASSIGNMENT:
-            sTable->checkAndUpdateVal(*node->children[0]->value, executeAST(node->children[1], sTable, return_obj));
+            sTable->checkAndUpdateVal(*(*node->children)[0]->value, executeAST((*node->children)[1], sTable, return_obj));
             return NULL;
         case EMPTY:
             return NULL;
@@ -211,7 +211,7 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
         case COMPOUND_STATEMENT:
         {
             Scope* newScope = new Scope(sTable);
-            for (ASTNode* child : node->children){
+            for (ASTNode* child : *node->children){
                 executeAST(child, newScope, return_obj);
             }
             delete newScope;
@@ -220,7 +220,7 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
 
         case PRINT_STATEMENT:
         {
-            Object* result = executeAST(node->children[0], sTable, return_obj);
+            Object* result = executeAST((*node->children)[0], sTable, return_obj);
             cout<<result->str()<<endl;
             delete result;
             return NULL;
@@ -230,23 +230,23 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
         {
             FunctionObject* func = new FunctionObject();
 
-            for (auto param : node->children[0]->children) {
+            for (auto param : *(*node->children)[0]->children) {
                 func->params.push_back(param->value);
             }
 
-            for (auto stmt : node->children[1]->children) {
+            for (auto stmt : *(*node->children)[1]->children) {
                 func->funcBody->push_back(stmt->deepCopyNode());
             }
             return func;
         }
 
         case RETURN_STATEMENT:
-            return_obj = executeAST(node->children[0], sTable, return_obj);
+            return_obj = executeAST((*node->children)[0], sTable, return_obj);
             return NULL;
 
         case FUNCTION_CALL:
         {
-            Object* obj = sTable->checkAndReturnClone(*node->children[0]->value);
+            Object* obj = sTable->checkAndReturnClone(*(*node->children)[0]->value);
             // Is a reference to the func in the symbol table and not a deep copy
             if (obj->otype != ObjectType::FUNCTION){
                 cerr<<"Expected a function"<<endl;
@@ -256,7 +256,7 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
             FunctionObject* func = dynamic_cast<FunctionObject*>(obj);
 
             vector<Object*> args_call;
-            for (ASTNode* arg : node->children[1]->children){
+            for (ASTNode* arg : *(*node->children)[1]->children){
                 args_call.push_back(executeAST(arg, sTable, return_obj));
             }
 
