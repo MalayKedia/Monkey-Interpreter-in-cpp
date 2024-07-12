@@ -19,7 +19,8 @@ struct Scope{
     void insertNew(string key, Object* value){
         // Check if key is already present in the current scope
         if(symbolTable.find(key) != symbolTable.end()){
-            cerr<<"Identifier "<<key<<" already declared in this scope"<<endl;
+            ErrorObject* obj =  new ErrorObject(ErrorType::ID_REDECLARED, key);
+            cerr<<obj->str()<<endl;
             return;
         }
         symbolTable[key] = value;
@@ -35,8 +36,7 @@ struct Scope{
             }
             scope = scope->parent;
         }
-        cerr<<"Identifier "<<key<<" not declared in this scope"<<endl;
-        return NULL;
+        return new ErrorObject(ErrorType::ID_UNDECLARED, key);
     }
 
     void checkAndUpdateVal(string key, Object* value){
@@ -51,7 +51,8 @@ struct Scope{
             scope = scope->parent;
         }
         if (scope == NULL){
-            cerr<<"Identifier "<<key<<" not declared in this scope"<<endl;
+            ErrorObject* obj = new ErrorObject(ErrorType::ID_UNDECLARED, key);
+            cerr<<obj->str()<<endl;
             return;
         }
     }

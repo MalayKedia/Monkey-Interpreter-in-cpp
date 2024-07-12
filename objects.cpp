@@ -7,7 +7,8 @@ enum class ObjectType{
     NUMBER,
     BOOL,
     STRING,
-    FUNCTION
+    FUNCTION,
+    ERROR
 };
 
 struct Object{
@@ -139,6 +140,65 @@ struct FunctionObject : Object{
 
     FunctionObject* clone() const override {
         return new FunctionObject(*this);
+    }
+};
+
+enum class ErrorType{
+    BOOL_EXPECTED,
+    NUMBER_EXPECTED,
+    DIV_BY_ZERO,
+    ID_UNDECLARED,
+    ID_REDECLARED,
+    ID_NOT_FUNC,
+    WRONG_ARG_COUNT
+};
+
+struct ErrorObject : Object{
+    ErrorType etype;
+
+    ErrorObject(ErrorType etype, string value): etype(etype){
+        this->value = new string(value);
+        otype = ObjectType::ERROR;
+    }
+
+    ErrorObject(ErrorType etype): etype(etype){
+        this->value = NULL;
+        otype = ObjectType::ERROR;
+    }
+
+    ErrorObject(const ErrorObject& other) {
+        value = new string(*(string*)other.value);
+        etype = other.etype;
+        otype = other.otype;
+    }
+
+    ~ErrorObject() override {
+        delete (string*)value;
+    }
+
+    string str() const override{
+        switch(etype){
+            case ErrorType::BOOL_EXPECTED:
+                return "Error: Expected a boolean value";
+            case ErrorType::NUMBER_EXPECTED:
+                return "Error: Expected a number value";
+            case ErrorType::DIV_BY_ZERO:
+                return "Error: Division by zero";
+            case ErrorType::ID_UNDECLARED:
+                return "Error: Identifier "+*(string*)value+" not declared";
+            case ErrorType::ID_REDECLARED:
+                return "Error: Identifier "+*(string*)value+" already declared";
+            case ErrorType::ID_NOT_FUNC:
+                return "Error: Identifier "+*(string*)value+" is not a function";
+            case ErrorType::WRONG_ARG_COUNT:
+                return "Error: "+*(string*)value+" received wrong number of arguments";
+            default:
+                return "Error: Unknown error";
+        }
+    }
+
+    ErrorObject* clone() const override {
+        return new ErrorObject(*this);
     }
 };
 

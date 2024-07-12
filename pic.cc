@@ -23,10 +23,12 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
             if (*node->value == "UMINUS"){
                 Object* exp = executeAST((*node->children)[0], sTable, return_obj);
 
-                if (exp->otype != ObjectType::NUMBER){
-                    cerr<<"Expected a number"<<endl;
+                if (exp->otype == ObjectType::ERROR){
+                    return exp;
+                }
+                else if (exp->otype != ObjectType::NUMBER){
                     delete exp;
-                    return NULL;
+                    return new ErrorObject(ErrorType::NUMBER_EXPECTED);
                 }
                 else{
                     NumberObject* numExp = dynamic_cast<NumberObject*>(exp);
@@ -37,10 +39,17 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
             else{
                 Object* lhs = executeAST((*node->children)[0], sTable, return_obj);
                 Object* rhs = executeAST((*node->children)[1], sTable, return_obj);
-
-                if (lhs->otype != ObjectType::NUMBER || rhs->otype != ObjectType::NUMBER){
-                    cerr<<"Expected a number"<<endl;
-                    return NULL;
+                
+                if (lhs->otype == ObjectType::ERROR){
+                    delete rhs;
+                    return lhs;
+                }
+                else if (rhs->otype == ObjectType::ERROR){
+                    delete lhs;
+                    return rhs;
+                }
+                else if (lhs->otype != ObjectType::NUMBER || rhs->otype != ObjectType::NUMBER){
+                    return new ErrorObject(ErrorType::NUMBER_EXPECTED);
                 }
                 else{
                     NumberObject* numLhs = dynamic_cast<NumberObject*>(lhs);
@@ -57,9 +66,8 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
                     }
                     else if (*node->value == "DIVIDE"){
                         if (*(double*)(numRhs->value) == 0){
-                            cerr<<"Division by zero"<<endl;
                             delete lhs; delete rhs;
-                            return NULL;
+                            return new ErrorObject(ErrorType::DIV_BY_ZERO);
                         }
                         else
                             *(double*)(numLhs->value) /= *(double*)(numRhs->value);
@@ -82,11 +90,13 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
         {
             if (*node->value == "NOT"){
                 Object* exp = executeAST((*node->children)[0], sTable, return_obj);
-
-                if (exp->otype != ObjectType::BOOL){
-                    cerr<<"Expected a boolean"<<endl;
+                
+                if (exp->otype == ObjectType::ERROR){
+                    return exp;
+                }
+                else if (exp->otype != ObjectType::BOOL){
                     delete exp;
-                    return NULL;
+                    return new ErrorObject(ErrorType::BOOL_EXPECTED);
                 }
                 else{
                     BoolObject* boolExp = dynamic_cast<BoolObject*>(exp);
@@ -98,10 +108,17 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
                 Object* lhs = executeAST((*node->children)[0], sTable, return_obj);
                 Object* rhs = executeAST((*node->children)[1], sTable, return_obj);
 
-                if (lhs->otype != ObjectType::BOOL || rhs->otype != ObjectType::BOOL){
-                    cerr<<"Expected a boolean"<<endl;
+                if (lhs->otype == ObjectType::ERROR){
+                    delete rhs;
+                    return lhs;
+                }
+                else if (rhs->otype == ObjectType::ERROR){
+                    delete lhs;
+                    return rhs;
+                }
+                else if (lhs->otype != ObjectType::BOOL || rhs->otype != ObjectType::BOOL){
                     delete lhs; delete rhs;
-                    return NULL;
+                    return new ErrorObject(ErrorType::BOOL_EXPECTED);
                 }
                 else{
                     BoolObject* boolLhs = dynamic_cast<BoolObject*>(lhs);
@@ -129,9 +146,16 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
             Object* lhs = executeAST((*node->children)[0], sTable, return_obj);
             Object* rhs = executeAST((*node->children)[1], sTable, return_obj);
 
-            if (lhs->otype != ObjectType::NUMBER || rhs->otype != ObjectType::NUMBER){
-                cerr<<"Expected a number"<<endl;
-                return NULL;
+            if (lhs->otype == ObjectType::ERROR){
+                delete rhs;
+                return lhs;
+            }
+            else if (rhs->otype == ObjectType::ERROR){
+                delete lhs;
+                return rhs;
+            }
+            else if (lhs->otype != ObjectType::NUMBER || rhs->otype != ObjectType::NUMBER){
+                return new ErrorObject(ErrorType::NUMBER_EXPECTED);
             }
             else{
                 NumberObject* numLhs = dynamic_cast<NumberObject*>(lhs);
@@ -179,10 +203,12 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
         {
             Object* condition = executeAST((*node->children)[0], sTable, return_obj);
 
-            if (condition->otype != ObjectType::BOOL){
-                cerr<<"Expected a boolean"<<endl;
+            if (condition->otype == ObjectType::ERROR){
+                return condition;
+            }
+            else if (condition->otype != ObjectType::BOOL){
                 delete condition;
-                return NULL;
+                return new ErrorObject(ErrorType::BOOL_EXPECTED);
             }
             else{
                 BoolObject* boolCondition = dynamic_cast<BoolObject*>(condition);
@@ -200,11 +226,27 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
         }
 
         case DECLARATION_ASSIGNMENT:
-            sTable->insertNew(*(*node->children)[0]->value, executeAST((*node->children)[1], sTable, return_obj));
+        {
+            Object* result = executeAST((*node->children)[1], sTable, return_obj);
+            if (result->otype == ObjectType::ERROR){
+                cerr<<result->str()<<endl;
+                delete result;
+                return NULL;
+            }
+            sTable->insertNew(*(*node->children)[0]->value, result);
             return NULL;
+        }
         case ASSIGNMENT:
-            sTable->checkAndUpdateVal(*(*node->children)[0]->value, executeAST((*node->children)[1], sTable, return_obj));
+        {
+            Object* result = executeAST((*node->children)[1], sTable, return_obj);
+            if (result->otype == ObjectType::ERROR){
+                cerr<<result->str()<<endl;
+                delete result;
+                return NULL;
+            }
+            sTable->checkAndUpdateVal(*(*node->children)[0]->value, result);
             return NULL;
+        }
         case EMPTY:
             return NULL;
 
@@ -240,6 +282,10 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
 
         case RETURN_STATEMENT:
             return_obj = executeAST((*node->children)[0], sTable, return_obj);
+            if (return_obj->otype == ObjectType::ERROR){
+                cerr<<return_obj->str()<<endl;
+                return_obj=NULL;
+            }
             return NULL;
 
         case FUNCTION_CALL:
@@ -247,9 +293,8 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
             Object* obj = sTable->checkAndReturnClone(*(*node->children)[0]->value);
             // Is a reference to the func in the symbol table and not a deep copy
             if (obj->otype != ObjectType::FUNCTION){
-                cerr<<"Expected a function"<<endl;
                 delete obj;
-                return NULL;
+                return new ErrorObject(ErrorType::ID_NOT_FUNC);
             }
             FunctionObject* func = dynamic_cast<FunctionObject*>(obj);
 
@@ -259,12 +304,11 @@ Object* executeAST(ASTNode* node, Scope* sTable, Object*& return_obj){
             }
 
             if (args_call.size() != func->params.size()){
-                cerr<<"Incorrect number of arguments"<<endl;
                 for (Object* arg : args_call){
                     delete arg;
                 }
                 delete obj;
-                return NULL;
+                return new ErrorObject(ErrorType::WRONG_ARG_COUNT);
             }
             
             Scope* funcScope = new Scope(sTable);

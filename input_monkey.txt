@@ -19,7 +19,7 @@ b=a+b; print(a); print(b);  // 24, 27
     print(a); print(b); print(c);  // 2, 27, 4
 }
 print(a); print(b);       // 2, 27
-// print(c);               // Identifier c not declared in this scope
+print(c);               // Identifier c not declared in this scope
 
 {   
     print(a);       // 2
@@ -41,7 +41,7 @@ print(2!=3);        // true
 
 
 let var3=1<2; print(var3);  // true
-// let x=1<2<3; print(x);   // Expected a number
+let x=1<2<3; print(x);   // Expected a number // Identifier x not declared
 
 print(true?1:2);     // 1
 
