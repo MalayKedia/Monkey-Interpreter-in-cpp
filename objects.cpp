@@ -36,6 +36,9 @@ struct NumberObject : Object{
     }
 
     string str() const override{
+        if (abs(*(double*)value - (int)*(double*)value)<0.0000001) {
+            return to_string((int)*(double*)value);
+        }
         return to_string(*(double*)value);
     }
 
